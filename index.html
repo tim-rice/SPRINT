@@ -5,84 +5,384 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSAT Sprint</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+        
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --correct: #2ecc71;
+            --incorrect: #e74c3c;
+            --background: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
-        #game-container {
-            background: white;
-            margin: 0 auto;
+        
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 700px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tagline {
+            font-style: italic;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background-color: rgba(44, 62, 80, 0.1);
+            font-weight: bold;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .game-area {
+            padding: 20px;
+        }
+        
+        .timer-container {
+            width: 100%;
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .timer-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 100%;
+            transition: width 1s linear;
+        }
+        
+        .question-number {
+            text-align: right;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: #777;
+        }
+        
+        .stimulus {
+            background-color: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            max-width: 600px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            min-height: 120px;
         }
-        #stimulus {
-            font-size: 18px;
+        
+        .question {
+            font-weight: 600;
             margin-bottom: 15px;
-            line-height: 1.4;
-            min-height: 80px;
+            font-size: 1.1rem;
+            color: var(--secondary);
         }
-        #question {
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #2c3e50;
+        
+        .answers {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
         }
-        #timer {
-            font-size: 24px;
-            font-weight: bold;
-            color: #e74c3c;
-            margin-bottom: 15px;
+        
+        .answer-btn {
+            padding: 15px;
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        #answers button {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            background-color: #3498db;
+        
+        .answer-btn:hover {
+            background-color: #f0f7ff;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .correct {
+            background-color: var(--correct);
+            color: white;
+            border-color: var(--correct);
+        }
+        
+        .incorrect {
+            background-color: var(--incorrect);
+            color: white;
+            border-color: var(--incorrect);
+        }
+        
+        .explanation {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .explanation h3 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        #answers button:hover {
+        
+        .btn:hover {
             background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        #score-container {
-            font-size: 20px;
-            margin: 15px 0;
+        
+        .btn:active {
+            transform: translateY(0);
         }
-        #lives {
-            font-size: 24px;
-            color: #e74c3c;
-            margin-bottom: 10px;
+        
+        .game-over {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+        
+        .game-over h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+        
+        .final-score {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .combo-animation {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            color: gold;
+            opacity: 0;
+            pointer-events: none;
+            animation: comboRise 1s forwards;
+        }
+        
+        @keyframes comboRise {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+        
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            padding: 8px 15px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .mode-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .answer-btn {
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <h1>LSAT SPRINT</h1>
-        <div id="score-container">Score: <span id="score">0</span> | Combo: x<span id="combo">1</span></div>
-        <div id="lives">❤️❤️❤️</div>
-        <div id="timer">12s</div>
-        <div id="stimulus">Click Start to begin the sprint!</div>
-        <div id="question"></div>
-        <div id="answers">
-            <!-- Buttons will be inserted by JavaScript -->
+    <div class="container">
+        <div class="header">
+            <h1>LSAT SPRINT</h1>
+            <div class="tagline">Outthink the Clock</div>
         </div>
-        <br>
-        <button id="start-button" onclick="startGame()">Start Sprint!</button>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div>SCORE</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-item">
+                <div>COMBO</div>
+                <div class="stat-value" id="combo">x1</div>
+            </div>
+            <div class="stat-item">
+                <div>LIVES</div>
+                <div class="stat-value" id="lives">3</div>
+            </div>
+        </div>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" id="lr-mode">Logic</button>
+            <button class="mode-btn" id="rc-mode">Reading</button>
+            <button class="mode-btn" id="mixed-mode">Mixed</button>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar"></div>
+            </div>
+            
+            <div class="question-number" id="question-number">Question #1</div>
+            
+            <div class="stimulus" id="stimulus">
+                Click Start to begin the sprint!
+            </div>
+            
+            <div class="question" id="question"></div>
+            
+            <div class="answers" id="answers">
+                <!-- Answer buttons will be inserted here -->
+            </div>
+            
+            <div class="explanation" id="explanation">
+                <h3>Explanation & Tips</h3>
+                <div id="explanation-text"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="start-button">Start Sprint!</button>
+            </div>
+        </div>
+        
+        <div class="game-over" id="game-over">
+            <h2>Game Over!</h2>
+            <div class="final-score" id="final-score">0</div>
+            <button class="btn" id="restart-button">Try Again</button>
+        </div>
     </div>
 
     <script>
-        // SAMPLE QUESTION BANK (You would expand this to 500+)
-        const questions = [
+        // Game variables
+        let currentScore = 0;
+        let comboMultiplier = 1;
+        let lives = 3;
+        let timeLeft;
+        let timerId;
+        let currentQuestionIndex;
+        let gameMode = 'lr'; // 'lr', 'rc', or 'mixed'
+        let questionsAnswered = 0;
+        
+        // Audio elements
+        const correctSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDcPABVvq9q8j2pFABMraYW2r5h3WUxfdJWnr5JmQjVgodDbq2EcBStztvPJfDf');
+        const incorrectSound = new Audio('data:audio/wav;base64,UklGRngFAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUcFAABBQ0dMUllcXFZQW2p0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0eWxhVktQWWp0e极地');
+        const timeWarningSound = new Audio('data:audio/wav;base64,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极地');
+        
+        // Sample question bank with 50 questions
+        const questionBank = [
+            // Logical Reasoning Questions (30)
             {
+                type: 'lr',
                 stimulus: "All philosophers are thinkers. Some thinkers are wise. Therefore, some philosophers are wise.",
                 question: "The reasoning above is flawed because it:",
                 answers: [
@@ -90,9 +390,11 @@
                     "Makes a conclusion that is not necessarily true based on the premises.",
                     "Assumes that all wise people are thinkers."
                 ],
-                correctIndex: 1
+                correctIndex: 1,
+                explanation: "The argument assumes that because some thinkers are wise, and all philosophers are thinkers, some philosophers must be wise. However, the group of thinkers that are wise might be entirely outside the group of philosophers. This is a common logical flaw known as the 'false middle'."
             },
             {
+                type: 'lr',
                 stimulus: "The new policy was implemented to reduce costs. Since its implementation, costs have risen by 15%. Therefore, the policy is a failure.",
                 question: "Which of the following, if true, most seriously weakens the argument?",
                 answers: [
@@ -100,113 +402,804 @@
                     "The policy was also intended to improve employee morale.",
                     "The manager who implemented the policy was recently fired."
                 ],
-                correctIndex: 0
+                correctIndex: 0,
+                explanation: "If costs would have risen even more without the policy, then the policy may have actually been successful at mitigating cost increases, which weakens the conclusion that the policy was a failure."
             },
             {
-                stimulus: "Passage: The economic theory of mercantilism held that a nation's wealth was measured by its store of precious metals. To accumulate wealth, exports were encouraged and imports were discouraged via tariffs. This view was later challenged by Adam Smith, who argued that national wealth was derived from production and commerce, not hoarding.",
+                type: 'lr',
+                stimulus: "Every time I eat strawberries, I develop a rash. Therefore, I must be allergic to strawberries.",
+                question: "Which of the following exhibits the same pattern of reasoning?",
+                answers: [
+                    "Every time I go swimming, the weather is sunny. Therefore, swimming causes sunny weather.",
+                    "Every time I study for a test, I get a good grade. Therefore, studying causes good grades.",
+                    "Every time I watch a horror movie, I have trouble sleeping. Therefore, horror movies cause insomnia."
+                ],
+                correctIndex: 2,
+                explanation: "This follows the same pattern of reasoning by inferring causation from correlation. Just because two events occur together doesn't necessarily mean one causes the other - there could be other factors at play."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the budget is approved, then the project will proceed. The project has proceeded.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The budget was approved.",
+                    "The budget was not approved.",
+                    "No conclusion can be drawn about the budget."
+                ],
+                correctIndex: 2,
+                explanation: "This is a classic fallacy of affirming the consequent. Just because the project proceeded doesn't necessarily mean the budget was approved - there could be other reasons why the project proceeded."
+            },
+            {
+                type: 'lr',
+                stimulus: "All successful lawyers passed the bar exam. Sarah passed the bar exam.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Sarah is a successful lawyer.",
+                    "Sarah is not a successful lawyer.",
+                    "No conclusion can be drawn about whether Sarah is a successful lawyer."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all successful lawyers passed the bar, passing the bar doesn't guarantee success as a lawyer - it's only one requirement among many."
+            },
+            {
+                type: 'lr',
+                stimulus: "No birds are mammals. All eagles are birds.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "No eagles are mammals.",
+                    "Some eagles are not mammals.",
+                    "Both conclusions follow logically."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid syllogism. If no birds are mammals, and all eagles are birds, then it necessarily follows that no eagles are mammals."
+            },
+            {
+                type: 'lr',
+                stimulus: "If it rains, the game will be canceled. The game was not canceled.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "It did not rain.",
+                    "It rained.",
+                    "No conclusion can be drawn about whether it rained."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid application of modus tollens. If rain leads to cancellation, and there was no cancellation, then it must not have rained."
+            },
+            {
+                type: 'lr',
+                stimulus: "Some lawyers are politicians. Some politicians are dishonest.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some lawyers are dishonest.",
+                    "No lawyers are dishonest.",
+                    "No conclusion can be drawn about whether some lawyers are dishonest."
+                ],
+                correctIndex: 2,
+                explanation: "This is a classic syllogistic fallacy. The two premises don't necessarily connect - the dishonest politicians might not overlap with the lawyers who are politicians."
+            },
+            {
+                type: 'lr',
+                stimulus: "Whenever the economy is strong, the incumbent party wins elections. The incumbent party won the election.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The economy was strong.",
+                    "The economy was not strong.",
+                    "No conclusion can be drawn about the economy."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While a strong economy might lead to election wins, there could be other reasons why the incumbent won."
+            },
+            {
+                type: 'lr',
+                stimulus: "All dogs are mammals. All mammals are animals.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "All dogs are animals.",
+                    "Some dogs are animals.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid syllogism. If all dogs are mammals and all mammals are animals, then by transitivity, all dogs must be animals."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the defendant is guilty, then the DNA evidence will match. The DNA evidence does not match.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The defendant is not guilty.",
+                    "The defendant is guilty.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid application of modus tollens. If guilt implies a DNA match, and there's no match, then the defendant cannot be guilty."
+            },
+            {
+                type: 'lr',
+                stimulus: "All roses are flowers. Some flowers fade quickly.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some roses fade quickly.",
+                    "No roses fade quickly.",
+                    "No conclusion can be drawn about roses fading quickly."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of the undistributed middle. The flowers that fade quickly might not include any roses, so we can't conclude anything about roses specifically."
+            },
+            {
+                type: 'lr',
+                stimulus: "Either the bill passes or the government shuts down. The bill did not pass.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The government will shut down.",
+                    "The government will not shut down.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid disjunctive syllogism. If only two options exist (A or B), and one is false (not A), then the other must be true (B)."
+            },
+            {
+                type: 'lr',
+                stimulus: "Whenever prices rise, demand falls. Demand has fallen.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Prices have risen.",
+                    "Prices have not risen.",
+                    "No conclusion can be drawn about prices."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While rising prices cause demand to fall, other factors could also cause demand to fall."
+            },
+            {
+                type: 'lr',
+                stimulus: "No reptiles are mammals. All snakes are reptiles.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "No snakes are mammals.",
+                    "Some snakes are not mammals.",
+                    "Both conclusions follow logically."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid syllogism. If no reptiles are mammals and all snakes are reptiles, then no snakes can be mammals."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the product is successful, then we will expand production. We are expanding production.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The product is successful.",
+                    "The product is not successful.",
+                    "No conclusion can be drawn about the product's success."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While success would lead to expansion, there might be other reasons for expanding production."
+            },
+            {
+                type: 'lr',
+                stimulus: "All philosophers question assumptions. Socrates questioned assumptions.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Socrates was a philosopher.",
+                    "Socrates was not a philosopher.",
+                    "No conclusion can be drawn about whether Socrates was a philosopher."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all philosophers question assumptions, others might also question assumptions without being philosophers."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the test is positive, then the disease is present. The disease is present.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The test is positive.",
+                    "The test is not positive.",
+                    "No conclusion can be drawn about the test."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While a positive test indicates disease, the disease could be present even if the test is negative (false negative)."
+            },
+            {
+                type: 'lr',
+                stimulus: "All cars produced by Company X have a defect. This vehicle has a defect.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "This vehicle was produced by Company X.",
+                    "This vehicle was not produced by Company X.",
+                    "No conclusion can be drawn about who produced this vehicle."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all Company X cars have defects, cars from other companies might also have defects."
+            },
+            {
+                type: 'lr',
+                stimulus: "Either the witness is lying or the defendant is guilty. The witness is not lying.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The defendant is guilty.",
+                    "The defendant is not guilty.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid disjunctive syllogism. If only two options exist (A or B), and one is false (not A), then the other must be true (B)."
+            },
+            {
+                type: 'lr',
+                stimulus: "All birds have feathers. Penguins have feathers.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Penguins are birds.",
+                    "Penguins are not birds.",
+                    "No conclusion can be drawn about whether penguins are birds."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all birds have feathers, other animals might also have feathers."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the server is down, then the website is inaccessible. The website is accessible.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The server is not down.",
+                    "The server is down.",
+                    "No conclusion can be drawn about the server."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid application of modus tollens. If the server being down makes the website inaccessible, and the website is accessible, then the server cannot be down."
+            },
+            {
+                type: 'lr',
+                stimulus: "Some doctors are surgeons. Some surgeons are specialists.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some doctors are specialists.",
+                    "No doctors are specialists.",
+                    "No conclusion can be drawn about whether some doctors are specialists."
+                ],
+                correctIndex: 2,
+                explanation: "This is a classic syllogistic fallacy. The specialists might be among surgeons who are not doctors, or the doctor-surgeons might not include any specialists."
+            },
+            {
+                type: 'lr',
+                stimulus: "All politicians are public speakers. Some public speakers are persuasive.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some politicians are persuasive.",
+                    "No politicians are persuasive.",
+                    "No conclusion can be drawn about whether some politicians are persuasive."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of the undistributed middle. The persuasive public speakers might not include any politicians."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the temperature drops below freezing, the pipes will burst. The pipes burst.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The temperature dropped below freezing.",
+                    "The temperature did not drop below freezing.",
+                    "No conclusion can be drawn about the temperature."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While freezing temperatures cause pipes to burst, other factors (like excessive pressure) could also cause pipes to burst."
+            },
+            {
+                type: 'lr',
+                stimulus: "No fish are mammals. All dolphins are mammals.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "No dolphins are fish.",
+                    "Some dolphins are not fish.",
+                    "Both conclusions follow logically."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid syllogism. If no fish are mammals and all dolphins are mammals, then no dolphins can be fish."
+            },
+            {
+                type: 'lr',
+                stimulus: "Either the contract is valid or it is void. The contract is not valid.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The contract is void.",
+                    "The contract is not void.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid disjunctive syllogism. If only two options exist (A or B), and one is false (not A), then the other must be true (B)."
+            },
+            {
+                type: 'lr',
+                stimulus: "All diamonds are precious stones. This is a precious stone.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "This is a diamond.",
+                    "This is not a diamond.",
+                    "No conclusion can be drawn about what this stone is."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all diamonds are precious stones, other stones (like rubies or emeralds) are also precious stones."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the drug is effective, then patients will improve. Patients did not improve.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The drug is not effective.",
+                    "The drug is effective.",
+                    "No conclusion can be drawn about the drug's effectiveness."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid application of modus tollens. If effectiveness leads to improvement, and there's no improvement, then the drug cannot be effective."
+            },
+            {
+                type: 'lr',
+                stimulus: "Some artists are painters. Some painters are famous.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some artists are famous.",
+                    "No artists are famous.",
+                    "No conclusion can be drawn about whether some artists are famous."
+                ],
+                correctIndex: 2,
+                explanation: "This is a classic syllogistic fallacy. The famous painters might not include any artists, or the artist-painters might not include any famous ones."
+            },
+            
+            // Reading Comprehension Questions (20)
+            {
+                type: 'rc',
+                stimulus: "The economic theory of mercantilism held that a nation's wealth was measured by its store of precious metals. To accumulate wealth, exports were encouraged and imports were discouraged via tariffs. This view was later challenged by Adam Smith, who argued that national wealth was derived from production and commerce, not hoarding.",
                 question: "According to the passage, Adam Smith would most likely agree with which of the following?",
                 answers: [
                     "Tariffs are an essential tool for national prosperity.",
                     "Wealth is created by economic activity, not just accumulation.",
                     "Mercantilism was an effective economic policy for its time."
                 ],
-                correctIndex: 1
+                correctIndex: 1,
+                explanation: "Adam Smith argued that wealth comes from production and commerce, challenging the mercantilist view that wealth comes from hoarding precious metals. This aligns with the idea that wealth is created through economic activity."
+            },
+            {
+                type: 'rc',
+                stimulus: "In legal interpretation, textualists argue that statutes should be interpreted based solely on their literal text, without considering legislative history or intent. Purposivists, in contrast, believe that laws should be interpreted in light of their intended purpose, even if that requires looking beyond the literal text.",
+                question: "Based on the passage, which approach would a purposivist most likely take when interpreting a statute with ambiguous language?",
+                answers: [
+                    "Strictly adhere to the dictionary definitions of the words used.",
+                    "Examine the legislative history to understand the law's purpose.",
+                    "Focus exclusively on the plain meaning of the text."
+                ],
+                correctIndex: 1,
+                explanation: "Purposivists believe in interpreting laws based on their intended purpose, which often involves examining legislative history to understand what lawmakers meant to accomplish."
+            },
+            {
+                type: 'rc',
+                stimulus: "The Fourth Amendment protects against unreasonable searches and seizures. In the digital age, courts have struggled to apply this 18th-century concept to modern technologies like cell phones and GPS tracking. Some argue that digital information should have strong protection, while others contend that new technologies require updated approaches to law enforcement.",
+                question: "The passage suggests that the primary challenge in applying the Fourth Amendment to modern technology is:",
+                answers: [
+                    "The amendment's text is too vague to be applicable.",
+                    "18th-century concepts don't easily translate to digital contexts.",
+                    "Law enforcement has consistently opposed digital privacy rights."
+                ],
+                correctIndex: 1,
+                explanation: "The passage indicates that courts have struggled to apply 18th-century concepts to modern technologies, which is the primary challenge mentioned."
+            },
+            {
+                type: 'rc',
+                stimulus: "Climate change mitigation policies often face the free-rider problem: while all countries benefit from reduced emissions, individual countries may avoid costly reductions hoping others will bear the burden. This leads to insufficient global action despite widespread agreement on the need for emission reductions.",
+                question: "Based on the passage, what is the free-rider problem in climate policy?",
+                answers: [
+                    "Countries enjoying benefits without contributing fairly to solutions.",
+                    "Countries refusing to acknowledge climate change exists.",
+                    "Countries prioritizing economic growth over environmental concerns."
+                ],
+                correctIndex: 0,
+                explanation: "The free-rider problem describes countries benefiting from emission reductions without bearing the costs of implementing those reductions themselves."
+            },
+            {
+                type: 'rc',
+                stimulus: "The philosophical concept of utilitarianism holds that the morally right action is the one that produces the greatest good for the greatest number. Critics argue that this approach could justify violating individual rights if it benefits the majority, while proponents contend that respecting rights generally produces the best overall outcomes.",
+                question: "According to the passage, what is a common criticism of utilitarianism?",
+                answers: [
+                    "It focuses too much on individual rights.",
+                    "It may justify sacrificing minority interests for the majority.",
+                    "It is impractical to calculate outcomes for every decision."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that critics argue utilitarianism could justify violating individual rights if it benefits the majority, which is the primary criticism mentioned."
+            },
+            {
+                type: 'rc',
+                stimulus: "In contract law, the mailbox rule states that an acceptance is effective when dispatched, if sent properly, even if it never arrives. This contrasts with the general rule that communication must be received to be effective. The mailbox rule creates certainty for offerors but may sometimes lead to unfair outcomes when acceptances are lost.",
+                question: "Based on the passage, what is the main advantage of the mailbox rule?",
+                answers: [
+                    "It ensures fairness in all circumstances.",
+                    "It creates certainty about when acceptance occurs.",
+                    "It aligns with how modern electronic communications work."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that the mailbox rule 'creates certainty for offerors' about when acceptance occurs, which is presented as its main advantage."
+            },
+            {
+                type: 'rc',
+                stimulus: "The concept of judicial review—the power of courts to declare laws unconstitutional—is not explicitly stated in the U.S. Constitution. It was established by the Supreme Court in Marbury v. Madison (1803), which reasoned that this power was implicit in the Constitution's structure and the judicial role. This decision fundamentally shaped the balance of power among branches of government.",
+                question: "According to the passage, how was the power of judicial review established?",
+                answers: [
+                    "Through explicit constitutional language.",
+                    "Through congressional legislation.",
+                    "Through Supreme Court interpretation."
+                ],
+                correctIndex: 2,
+                explanation: "The passage states that judicial review was established by the Supreme Court in Marbury v. Madison, which reasoned that this power was implicit in the Constitution."
+            },
+            {
+                type: 'rc',
+                stimulus: "Behavioral economics challenges the traditional economic assumption that people always make rational decisions. It incorporates insights from psychology showing that people often use mental shortcuts (heuristics) and are influenced by cognitive biases. These findings have implications for policy design, suggesting that 'nudges' can help people make better choices without restricting freedom.",
+                question: "Based on the passage, how does behavioral economics differ from traditional economics?",
+                answers: [
+                    "It assumes people always make rational decisions.",
+                    "It incorporates psychological insights about decision-making.",
+                    "It advocates for restricting individual choice through regulations."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that behavioral economics incorporates insights from psychology about mental shortcuts and cognitive biases, which challenges the traditional economic assumption of perfect rationality."
+            },
+            {
+                type: 'rc',
+                stimulus: "The exclusionary rule prohibits evidence obtained through illegal searches from being used in court. Supporters argue it deters police misconduct, while critics contend it may allow guilty defendants to go free. The rule represents the tension between protecting constitutional rights and ensuring effective law enforcement.",
+                question: "According to the passage, what is the main argument for the exclusionary rule?",
+                answers: [
+                    "It helps convict guilty defendants.",
+                    "It deters police misconduct.",
+                    "It makes law enforcement more efficient."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that supporters argue the exclusionary rule 'deters police misconduct,' which is presented as the main argument in its favor."
+            },
+            {
+                type: 'rc',
+                stimulus: "The concept of 'originalism' in constitutional interpretation holds that the Constitution should be interpreted according to its original public meaning at the time it was adopted. Critics argue that this approach fails to adapt the Constitution to modern circumstances, while proponents contend it constrains judicial activism and respects democratic processes.",
+                question: "Based on the passage, what is the primary advantage of originalism according to its proponents?",
+                answers: [
+                    "It allows judges to adapt the Constitution to modern values.",
+                    "It constrains judicial activism and respects democracy.",
+                    "It makes constitutional interpretation easier for judges."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that proponents contend originalism 'constrains judicial activism and respects democratic processes,' which is presented as its primary advantage."
+            },
+            {
+                type: 'rc',
+                stimulus: "The 'tragedy of the commons' occurs when individuals, acting independently in their self-interest, deplete shared resources, even when this is against everyone's long-term interest. Solutions include privatization, regulation, or community-based management of resources.",
+                question: "According to the passage, what characterizes the tragedy of the commons?",
+                answers: [
+                    "Individuals cooperatively managing shared resources.",
+                    "Individual actions depleting shared resources despite long-term harm.",
+                    "Government effectively regulating common resources."
+                ],
+                correctIndex: 1,
+                explanation: "The passage describes the tragedy of the commons as occurring when individuals acting in self-interest deplete shared resources, even against everyone's long-term interest."
+            },
+            {
+                type: 'rc',
+                stimulus: "The legal doctrine of stare decisis ('to stand by things decided') promotes stability in the law by requiring courts to follow precedents set in earlier cases. While this creates predictability, it can also perpetuate outdated rulings. Courts may distinguish earlier cases or, rarely, overturn precedents that are clearly wrong or outdated.",
+                question: "Based on the passage, what is the main benefit of stare decisis?",
+                answers: [
+                    "It allows courts to frequently update legal doctrines.",
+                    "It promotes stability and predictability in the law.",
+                    "It ensures all outdated rulings are eventually overturned."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that stare decisis 'promotes stability in the law' and 'creates predictability,' which are presented as its main benefits."
+            },
+            {
+                type: 'rc',
+                stimulus: "In philosophy, the 'is-ought problem' questions whether descriptive statements (about what is) can logically prescribe moral conclusions (about what ought to be). David Hume notably argued that many moral systems invalidly derive ought from is without sufficient justification.",
+                question: "According to the passage, what does the is-ought problem concern?",
+                answers: [
+                    "Whether descriptive facts can logically lead to moral prescriptions.",
+                    "Whether moral statements can be objectively true or false.",
+                    "Whether science can answer ethical questions."
+                ],
+                correctIndex: 0,
+                explanation: "The passage states that the is-ought problem questions whether descriptive statements 'can logically prescribe moral conclusions,' which aligns with the first answer choice."
+            },
+            {
+                type: 'rc',
+                stimulus: "Antitrust laws aim to prevent monopolies and promote competition. Historically, they focused on preventing excessive market concentration and anticompetitive practices. In recent decades, some argue enforcement has become too lenient, allowing harmful consolidation, while others contend that global competition and new technologies require updated approaches to antitrust policy.",
+                question: "Based on the passage, what is a current debate about antitrust law?",
+                answers: [
+                    "Whether antitrust laws are constitutional.",
+                    "Whether enforcement has become too lenient.",
+                    "Whether competition is beneficial for consumers."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that 'some argue enforcement has become too lenient,' which is presented as a current debate about antitrust law."
+            },
+            {
+                type: 'rc',
+                stimulus: "The concept of 'due process' in constitutional law requires that the government follow fair procedures before depriving a person of life, liberty, or property. This includes notice and an opportunity to be heard. Due process serves both to ensure accurate outcomes and to respect individual dignity through participatory procedures.",
+                question: "According to the passage, what does due process require?",
+                answers: [
+                    "The government can deprive rights without procedures in emergencies.",
+                    "Fair procedures including notice and opportunity to be heard.",
+                    "Only criminal defendants are entitled to due process protections."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that due process 'requires that the government follow fair procedures before depriving a person of life, liberty, or property. This includes notice and an opportunity to be heard.'"
+            },
+            {
+                type: 'rc',
+                stimulus: "The 'prisoner's dilemma' in game theory shows how two rational individuals might not cooperate, even when it appears to be in their best interest. This occurs because each fears the other will defect, leading to a worse outcome for both than if they had cooperated. The dilemma illustrates challenges in achieving cooperation without enforcement mechanisms.",
+                question: "Based on the passage, what does the prisoner's dilemma demonstrate?",
+                answers: [
+                    "Rational individuals always achieve the best collective outcome.",
+                    "Cooperation is impossible without external enforcement.",
+                    "Rational individuals may fail to cooperate despite mutual benefit."
+                ],
+                correctIndex: 2,
+                explanation: "The passage states that the prisoner's dilemma shows how 'two rational individuals might not cooperate, even when it appears to be in their best interest,' leading to a worse outcome for both."
+            },
+            {
+                type: 'rc',
+                stimulus: "The 'reasonable person standard' in tort law uses a hypothetical person with ordinary prudence as a benchmark for determining negligence. Critics argue this standard may incorporate societal biases, while proponents contend it provides an objective measure that reflects community standards of care.",
+                question: "According to the passage, what is the main advantage of the reasonable person standard?",
+                answers: [
+                    "It incorporates individual differences and capabilities.",
+                    "It provides an objective measure reflecting community standards.",
+                    "It eliminates all biases from legal judgments."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that proponents contend the reasonable person standard 'provides an objective measure that reflects community standards of care,' which is presented as its main advantage."
+            },
+            {
+                type: 'rc',
+                stimulus: "The 'veil of ignorance' thought experiment proposed by philosopher John Rawls suggests that principles of justice should be chosen from an original position where no one knows their place in society. This ensures fairness, as people would not privilege certain positions but would design systems benefiting everyone, especially the least advantaged.",
+                question: "Based on the passage, what is the purpose of the veil of ignorance?",
+                answers: [
+                    "To ensure principles of justice are chosen fairly without self-interest.",
+                    "To justify maintaining existing social and economic inequalities.",
+                    "To propose that people behind the veil would choose utilitarianism."
+                ],
+                correctIndex: 0,
+                explanation: "The passage states that the veil of ignorance ensures fairness because people would not privilege certain positions but would design systems benefiting everyone."
+            },
+            {
+                type: 'rc',
+                stimulus: "The 'business judgment rule' protects corporate directors from liability for decisions made in good faith with reasonable care, even if those decisions turn out poorly. This recognizes that business decisions often involve risk and that second-guessing by courts could discourage beneficial risk-taking.",
+                question: "According to the passage, why was the business judgment rule established?",
+                answers: [
+                    "To encourage directors to take calculated risks without fear of liability.",
+                    "To allow courts to regularly review corporate decision-making.",
+                    "To protect directors from any liability for poor decisions."
+                ],
+                correctIndex: 0,
+                explanation: "The passage states that the rule recognizes that business decisions involve risk and that second-guessing by courts could discourage beneficial risk-taking."
+            },
+            {
+                type: 'rc',
+                stimulus: "The concept of 'eminent domain' allows governments to take private property for public use with just compensation. Controversies often arise about what constitutes 'public use' and whether compensation is truly 'just.' These tensions reflect the balance between individual property rights and community needs.",
+                question: "Based on the passage, what is the primary source of controversy regarding eminent domain?",
+                answers: [
+                    "Whether governments should have any power to take property.",
+                    "What constitutes public use and whether compensation is just.",
+                    "Whether compensation should be required at all."
+                ],
+                correctIndex: 1,
+                explanation: "The passage states that controversies often arise about what constitutes 'public use' and whether compensation is truly 'just,' which are the primary sources of controversy mentioned."
             }
         ];
 
-        let currentScore = 0;
-        let comboMultiplier = 1;
-        let lives = 3;
-        let timeLeft;
-        let timerId;
-        let currentQuestionIndex;
+        // DOM elements
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const gameArea = document.getElementById('game-area');
+        const gameOver = document.getElementById('game-over');
+        const scoreElement = document.getElementById('score');
+        const comboElement = document.getElementById('combo');
+        const livesElement = document.getElementById('lives');
+        const stimulusElement = document.getElementById('stimulus');
+        const questionElement = document.getElementById('question');
+        const answersElement = document.getElementById('answers');
+        const explanationElement = document.getElementById('explanation');
+        const explanationTextElement = document.getElementById('explanation-text');
+        const timerBar = document.getElementById('timer-bar');
+        const questionNumberElement = document.getElementById('question-number');
+        const finalScoreElement = document.getElementById('final-score');
+        const lrModeButton = document.getElementById('lr-mode');
+        const rcModeButton = document.getElementById('rc-mode');
+        const mixedModeButton = document.getElementById('mixed-mode');
 
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        
+        lrModeButton.addEventListener('click', () => {
+            gameMode = 'lr';
+            lrModeButton.classList.add('active');
+            rcModeButton.classList.remove('active');
+            mixedModeButton.classList.remove('active');
+        });
+        
+        rcModeButton.addEventListener('click', () => {
+            gameMode = 'rc';
+            rcModeButton.classList.add('active');
+            lrModeButton.classList.remove('active');
+            mixedModeButton.classList.remove('active');
+        });
+        
+        mixedModeButton.addEventListener('click', () => {
+            gameMode = 'mixed';
+            mixedModeButton.classList.add('active');
+            lrModeButton.classList.remove('active');
+            rcModeButton.classList.remove('active');
+        });
+
+        // Game functions
         function startGame() {
             currentScore = 0;
             comboMultiplier = 1;
             lives = 3;
-            document.getElementById('score').textContent = currentScore;
-            document.getElementById('combo').textContent = comboMultiplier;
-            document.getElementById('lives').textContent = '❤️❤️❤️';
-            document.getElementById('start-button').style.display = 'none';
+            questionsAnswered = 0;
+            
+            scoreElement.textContent = currentScore;
+            comboElement.textContent = `x${comboMultiplier}`;
+            livesElement.textContent = lives;
+            
+            gameArea.style.display = 'block';
+            gameOver.style.display = 'none';
+            
             nextQuestion();
         }
 
         function nextQuestion() {
             clearInterval(timerId);
-            currentQuestionIndex = Math.floor(Math.random() * questions.length);
-            const q = questions[currentQuestionIndex];
-
-            document.getElementById('stimulus').textContent = q.stimulus;
-            document.getElementById('question').textContent = q.question;
-
-            const answersContainer = document.getElementById('answers');
-            answersContainer.innerHTML = ''; // Clear previous buttons
-
+            
+            // Filter questions based on game mode
+            let filteredQuestions;
+            if (gameMode === 'lr') {
+                filteredQuestions = questionBank.filter(q => q.type === 'lr');
+            } else if (gameMode === 'rc') {
+                filteredQuestions = questionBank.filter(q => q.type === 'rc');
+            } else {
+                filteredQuestions = questionBank;
+            }
+            
+            currentQuestionIndex = Math.floor(Math.random() * filteredQuestions.length);
+            const q = filteredQuestions[currentQuestionIndex];
+            
+            questionsAnswered++;
+            questionNumberElement.textContent = `Question #${questionsAnswered}`;
+            
+            stimulusElement.textContent = q.stimulus;
+            questionElement.textContent = q.question;
+            
+            answersElement.innerHTML = '';
             q.answers.forEach((answer, index) => {
                 const button = document.createElement('button');
                 button.textContent = answer;
-                button.onclick = () => checkAnswer(index);
-                answersContainer.appendChild(button);
+                button.classList.add('answer-btn');
+                button.onclick = () => checkAnswer(index, q.correctIndex);
+                answersElement.appendChild(button);
             });
-
+            
+            explanationElement.style.display = 'none';
+            
             timeLeft = 12;
-            document.getElementById('timer').textContent = timeLeft + 's';
+            timerBar.style.width = '100%';
+            timerBar.style.transition = 'width 12s linear';
+            timerBar.style.backgroundColor = '#3498db';
+            
+            setTimeout(() => {
+                timerBar.style.width = '0%';
+            }, 50);
+            
             timerId = setInterval(updateTimer, 1000);
         }
 
         function updateTimer() {
             timeLeft--;
-            document.getElementById('timer').textContent = timeLeft + 's';
+            
+            if (timeLeft <= 3) {
+                timerBar.style.backgroundColor = '#e74c3c';
+                if (timeLeft === 3) {
+                    timeWarningSound.play();
+                }
+            }
+            
             if (timeLeft <= 0) {
+                clearInterval(timerId);
                 wrongAnswer();
             }
         }
 
-        function checkAnswer(selectedIndex) {
+        function checkAnswer(selectedIndex, correctIndex) {
             clearInterval(timerId);
-            if (selectedIndex === questions[currentQuestionIndex].correctIndex) {
-                correctAnswer();
+            
+            const answerButtons = answersElement.querySelectorAll('.answer-btn');
+            
+            if (selectedIndex === correctIndex) {
+                // Correct answer
+                answerButtons[selectedIndex].classList.add('correct');
+                correctSound.play();
+                
+                // Calculate points: base + time bonus
+                const pointsEarned = 100 + (timeLeft * 10);
+                currentScore += pointsEarned * comboMultiplier;
+                comboMultiplier++;
+                
+                scoreElement.textContent = currentScore;
+                comboElement.textContent = `x${comboMultiplier}`;
+                
+                // Show combo animation if multiplier is high
+                if (comboMultiplier >= 3) {
+                    const comboAnimation = document.createElement('div');
+                    comboAnimation.classList.add('combo-animation');
+                    comboAnimation.textContent = `COMBO x${comboMultiplier-1}!`;
+                    gameArea.appendChild(comboAnimation);
+                    
+                    setTimeout(() => {
+                        gameArea.removeChild(comboAnimation);
+                    }, 1000);
+                }
             } else {
-                wrongAnswer();
+                // Incorrect answer
+                answerButtons[selectedIndex].classList.add('incorrect');
+                answerButtons[correctIndex].classList.add('correct');
+                incorrectSound.play();
+                
+                lives--;
+                livesElement.textContent = lives;
+                comboMultiplier = 1;
+                comboElement.textContent = `x${comboMultiplier}`;
             }
-        }
-
-        function correctAnswer() {
-            // Calculate points: base + time bonus
-            const pointsEarned = 100 + (timeLeft * 10);
-            currentScore += pointsEarned * comboMultiplier;
-            comboMultiplier++; // Increase combo!
-            document.getElementById('score').textContent = currentScore;
-            document.getElementById('combo').textContent = comboMultiplier;
-            setTimeout(nextQuestion, 1000); // Brief pause before next question
+            
+            // Show explanation
+            explanationTextElement.textContent = questionBank.find(q => 
+                q.stimulus === stimulusElement.textContent && 
+                q.question === questionElement.textContent
+            ).explanation;
+            
+            explanationElement.style.display = 'block';
+            
+            // Wait before next question or game over
+            setTimeout(() => {
+                if (lives <= 0) {
+                    gameOverFunc();
+                } else {
+                    nextQuestion();
+                }
+            }, 5000); // 5 seconds to read explanation
         }
 
         function wrongAnswer() {
+            const correctIndex = questionBank.findIndex(q => 
+                q.stimulus === stimulusElement.textContent && 
+                q.question === questionElement.textContent
+            );
+            
+            const answerButtons = answersElement.querySelectorAll('.answer-btn');
+            answerButtons[questionBank[correctIndex].correctIndex].classList.add('correct');
+            incorrectSound.play();
+            
             lives--;
-            comboMultiplier = 1; // Reset combo
-            document.getElementById('combo').textContent = comboMultiplier;
-
-            // Update lives display
-            let livesText = '';
-            for (let i = 0; i < lives; i++) livesText += '❤️';
-            document.getElementById('lives').textContent = livesText;
-
-            if (lives <= 0) {
-                gameOver();
-            } else {
-                setTimeout(nextQuestion, 1000);
-            }
+            livesElement.textContent = lives;
+            comboMultiplier = 1;
+            comboElement.textContent = `x${comboMultiplier}`;
+            
+            // Show explanation
+            explanationTextElement.textContent = questionBank[correctIndex].explanation;
+            explanationElement.style.display = 'block';
+            
+            // Wait before next question or game over
+            setTimeout(() => {
+                if (lives <= 0) {
+                    gameOverFunc();
+                } else {
+                    nextQuestion();
+                }
+            }, 5000); // 5 seconds to read explanation
         }
 
-        function gameOver() {
-            clearInterval(timerId);
-            document.getElementById('stimulus').textContent = 'Game Over! Your final score: ' + currentScore;
-            document.getElementById('question').textContent = '';
-            document.getElementById('answers').innerHTML = '';
-            document.getElementById('timer').textContent = '';
-            document.getElementById('start-button').style.display = 'block';
-            document.getElementById('start-button').textContent = 'Try Again!';
+        function gameOverFunc() {
+            gameArea.style.display = 'none';
+            gameOver.style.display = 'block';
+            finalScoreElement.textContent = currentScore;
         }
     </script>
 </body>
