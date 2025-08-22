@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSAT Sprint</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        #game-container {
+            background: white;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        #stimulus {
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            min-height: 80px;
+        }
+        #question {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        #timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        #answers button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        #answers button:hover {
+            background-color: #2980b9;
+        }
+        #score-container {
+            font-size: 20px;
+            margin: 15px 0;
+        }
+        #lives {
+            font-size: 24px;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>LSAT SPRINT</h1>
+        <div id="score-container">Score: <span id="score">0</span> | Combo: x<span id="combo">1</span></div>
+        <div id="lives">❤️❤️❤️</div>
+        <div id="timer">12s</div>
+        <div id="stimulus">Click Start to begin the sprint!</div>
+        <div id="question"></div>
+        <div id="answers">
+            <!-- Buttons will be inserted by JavaScript -->
+        </div>
+        <br>
+        <button id="start-button" onclick="startGame()">Start Sprint!</button>
+    </div>
+
+    <script>
+        // SAMPLE QUESTION BANK (You would expand this to 500+)
+        const questions = [
+            {
+                stimulus: "All philosophers are thinkers. Some thinkers are wise. Therefore, some philosophers are wise.",
+                question: "The reasoning above is flawed because it:",
+                answers: [
+                    "Illegitimately equates thinkers with philosophers.",
+                    "Makes a conclusion that is not necessarily true based on the premises.",
+                    "Assumes that all wise people are thinkers."
+                ],
+                correctIndex: 1
+            },
+            {
+                stimulus: "The new policy was implemented to reduce costs. Since its implementation, costs have risen by 15%. Therefore, the policy is a failure.",
+                question: "Which of the following, if true, most seriously weakens the argument?",
+                answers: [
+                    "Costs were projected to rise by 30% without the policy.",
+                    "The policy was also intended to improve employee morale.",
+                    "The manager who implemented the policy was recently fired."
+                ],
+                correctIndex: 0
+            },
+            {
+                stimulus: "Passage: The economic theory of mercantilism held that a nation's wealth was measured by its store of precious metals. To accumulate wealth, exports were encouraged and imports were discouraged via tariffs. This view was later challenged by Adam Smith, who argued that national wealth was derived from production and commerce, not hoarding.",
+                question: "According to the passage, Adam Smith would most likely agree with which of the following?",
+                answers: [
+                    "Tariffs are an essential tool for national prosperity.",
+                    "Wealth is created by economic activity, not just accumulation.",
+                    "Mercantilism was an effective economic policy for its time."
+                ],
+                correctIndex: 1
+            }
+        ];
+
+        let currentScore = 0;
+        let comboMultiplier = 1;
+        let lives = 3;
+        let timeLeft;
+        let timerId;
+        let currentQuestionIndex;
+
+        function startGame() {
+            currentScore = 0;
+            comboMultiplier = 1;
+            lives = 3;
+            document.getElementById('score').textContent = currentScore;
+            document.getElementById('combo').textContent = comboMultiplier;
+            document.getElementById('lives').textContent = '❤️❤️❤️';
+            document.getElementById('start-button').style.display = 'none';
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            clearInterval(timerId);
+            currentQuestionIndex = Math.floor(Math.random() * questions.length);
+            const q = questions[currentQuestionIndex];
+
+            document.getElementById('stimulus').textContent = q.stimulus;
+            document.getElementById('question').textContent = q.question;
+
+            const answersContainer = document.getElementById('answers');
+            answersContainer.innerHTML = ''; // Clear previous buttons
+
+            q.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.textContent = answer;
+                button.onclick = () => checkAnswer(index);
+                answersContainer.appendChild(button);
+            });
+
+            timeLeft = 12;
+            document.getElementById('timer').textContent = timeLeft + 's';
+            timerId = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft + 's';
+            if (timeLeft <= 0) {
+                wrongAnswer();
+            }
+        }
+
+        function checkAnswer(selectedIndex) {
+            clearInterval(timerId);
+            if (selectedIndex === questions[currentQuestionIndex].correctIndex) {
+                correctAnswer();
+            } else {
+                wrongAnswer();
+            }
+        }
+
+        function correctAnswer() {
+            // Calculate points: base + time bonus
+            const pointsEarned = 100 + (timeLeft * 10);
+            currentScore += pointsEarned * comboMultiplier;
+            comboMultiplier++; // Increase combo!
+            document.getElementById('score').textContent = currentScore;
+            document.getElementById('combo').textContent = comboMultiplier;
+            setTimeout(nextQuestion, 1000); // Brief pause before next question
+        }
+
+        function wrongAnswer() {
+            lives--;
+            comboMultiplier = 1; // Reset combo
+            document.getElementById('combo').textContent = comboMultiplier;
+
+            // Update lives display
+            let livesText = '';
+            for (let i = 0; i < lives; i++) livesText += '❤️';
+            document.getElementById('lives').textContent = livesText;
+
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                setTimeout(nextQuestion, 1000);
+            }
+        }
+
+        function gameOver() {
+            clearInterval(timerId);
+            document.getElementById('stimulus').textContent = 'Game Over! Your final score: ' + currentScore;
+            document.getElementById('question').textContent = '';
+            document.getElementById('answers').innerHTML = '';
+            document.getElementById('timer').textContent = '';
+            document.getElementById('start-button').style.display = 'block';
+            document.getElementById('start-button').textContent = 'Try Again!';
+        }
+    </script>
+</body>
+</html>
