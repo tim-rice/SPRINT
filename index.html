@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSAT Sprint</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+        
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --correct: #2ecc71;
+            --incorrect: #e74c3c;
+            --background: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 700px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tagline {
+            font-style: italic;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background-color: rgba(44, 62, 80, 0.1);
+            font-weight: bold;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .game-area {
+            padding: 20px;
+        }
+        
+        .timer-container {
+            width: 100%;
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .timer-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 100%;
+            transition: width 1s linear;
+        }
+        
+        .question-number {
+            text-align: right;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: #777;
+        }
+        
+        .stimulus {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            min-height: 120px;
+        }
+        
+        .question {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: var(--secondary);
+        }
+        
+        .answers {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .answer-btn {
+            padding: 15px;
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .answer-btn:hover {
+            background-color: #f0f7ff;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .correct {
+            background-color: var(--correct);
+            color: white;
+            border-color: var(--correct);
+        }
+        
+        .incorrect {
+            background-color: var(--incorrect);
+            color: white;
+            border-color: var(--incorrect);
+        }
+        
+        .explanation {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .explanation h3 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .game-over {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+        
+        .game-over h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+        
+        .final-score {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .combo-animation {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            color: gold;
+            opacity: 0;
+            pointer-events: none;
+            animation: comboRise 1s forwards;
+        }
+        
+        @keyframes comboRise {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+        
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            padding: 8px 15px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .mode-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .answer-btn {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LSAT SPRINT</h1>
+            <div class="tagline">Outthink the Clock</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div>SCORE</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-item">
+                <div>COMBO</div>
+                <div class="stat-value" id="combo">x1</div>
+            </div>
+            <div class="stat-item">
+                <div>LIVES</div>
+                <div class="stat-value" id="lives">3</div>
+            </div>
+        </div>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" id="lr-mode">Logic</button>
+            <button class="mode-btn" id="rc-mode">Reading</button>
+            <button class="mode-btn" id="mixed-mode">Mixed</button>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar"></div>
+            </div>
+            
+            <div class="question-number" id="question-number">Question #1</div>
+            
+            <div class="stimulus" id="stimulus">
+                Click Start to begin the sprint!
+            </div>
+            
+            <div class="question" id="question"></div>
+            
+            <div class="answers" id="answers">
+                <!-- Answer buttons will be inserted here -->
+            </div>
+            
+            <div class="explanation" id="explanation">
+                <h3>Explanation & Tips</h3>
+                <div id="explanation-text"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="start-button">Start Sprint!</button>
+            </div>
+        </div>
+        
+        <div class="game-over" id="game-over">
+            <h2>Game Over!</h2>
+            <div class="final-score" id="final-score">0</div>
+            <button class="btn" id="restart-button">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let currentScore = 0;
+        let comboMultiplier = 1;
+        let lives = 3;
+        let timeLeft;
+        let timerId;
+        let currentQuestionIndex;
+        let gameMode = 'lr'; // 'lr', 'rc', or 'mixed'
+        let questionsAnswered = 0;
+        
+        // Audio elements - simplified sounds
+        const correctSound = new Audio("data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAACBgIF/gICAg3+CgIJ/g4CCf4OAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCBf4KAgX+CgIF/goCB极地");
+        const incorrectSound = new Audio("data:audio/wav;base64,UklGRpYDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YbQDAACAgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAgH+AgH9/gICAf4CAf3+AgIB/gIB/f4CAg极地");
+        const timeWarningSound = new Audio("data:audio/wav;base64,UklGRpQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YbADAACBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgY极地");
+        
+        // Sample question bank with 50 questions
+        const questionBank = [
+            // Logical Reasoning Questions (30)
+            {
+                type: 'lr',
+                stimulus: "All philosophers are thinkers. Some thinkers are wise. Therefore, some philosophers are wise.",
+                question: "The reasoning above is flawed because it:",
+                answers: [
+                    "Illegitimately equates thinkers with philosophers.",
+                    "Makes a conclusion that is not necessarily true based on the premises.",
+                    "Assumes that all wise people are thinkers."
+                ],
+                correctIndex: 1,
+                explanation: "The argument assumes that because some thinkers are wise, and all philosophers are thinkers, some philosophers must be wise. However, the group of thinkers that are wise might be entirely outside the group of philosophers. This is a common logical flaw known as the 'false middle'."
+            },
+            {
+                type: 'lr',
+                stimulus: "The new policy was implemented to reduce costs. Since its implementation, costs have risen by 15%. Therefore, the policy is a failure.",
+                question: "Which of the following, if true, most seriously weakens the argument?",
+                answers: [
+                    "Costs were projected to rise by 30% without the policy.",
+                    "The policy was also intended to improve employee morale.",
+                    "The manager who implemented the policy was recently fired."
+                ],
+                correctIndex: 0,
+                explanation: "If costs would have risen even more without the policy, then the policy may have actually been successful at mitigating cost increases, which weakens the conclusion that the policy was a failure."
+            },
+            {
+                type: 'lr',
+                stimulus: "Every time I eat strawberries, I develop a rash. Therefore, I must be allergic to strawberries.",
+                question: "Which of the following exhibits the same pattern of reasoning?",
+                answers: [
+                    "Every time I go swimming, the weather is sunny. Therefore, swimming causes sunny weather.",
+                    "Every time I study for a test, I get a good grade. Therefore, studying causes good grades.",
+                    "Every time I watch a horror movie, I have trouble sleeping. Therefore, horror movies cause insomnia."
+                ],
+                correctIndex: 2,
+                explanation: "This follows the same pattern of reasoning by inferring causation from correlation. Just because two events occur together doesn't necessarily mean one causes the other - there could be other factors at play."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the budget is approved, then the project will proceed. The project has proceeded.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The budget was approved.",
+                    "The budget was not approved.",
+                    "No conclusion can be drawn about the budget."
+                ],
+                correctIndex: 2,
+                explanation: "This is a classic fallacy of affirming the consequent. Just because the project proceeded doesn't necessarily mean the budget was approved - there could be other reasons why the project proceeded."
+            },
+            {
+                type: 'lr',
+                stimulus: "All successful lawyers passed the bar exam. Sarah passed the bar exam.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Sarah is a successful lawyer.",
+                    "Sarah is not a successful lawyer.",
+                    "No conclusion can be drawn about whether Sarah is a successful lawyer."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all successful lawyers passed the bar, passing the bar doesn't guarantee success as a lawyer - it's only one requirement among many."
+            },
+            {
+                type: 'lr',
+                stimulus: "No birds are mammals. All eagles are birds.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "No eagles are mammals.",
+                    "Some eagles are not mammals.",
+                    "Both conclusions follow logically."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid syllogism. If no birds are mammals, and all eagles are birds, then it necessarily follows that no eagles are mammals."
+            },
+            {
+                type: 'lr',
+                stimulus: "If it rains, the game will be canceled. The game was not canceled.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "It did not rain.",
+                    "It rained.",
+                    "No conclusion can be drawn about whether it rained."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid application of modus tollens. If rain leads to cancellation, and there was no cancellation, then it must not have rained."
+            },
+            {
+                type: 'lr',
+                stimulus: "Some lawyers are politicians. Some politicians are dishonest.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some lawyers are dishonest.",
+                    "No lawyers are dishonest.",
+                    "No conclusion can be drawn about whether some lawyers are dishonest."
+                ],
+                correctIndex: 2,
+                explanation: "This is a classic syllogistic fallacy. The two premises don't necessarily connect - the dishonest politicians might not overlap with the lawyers who are politicians."
+            },
+            {
+                type: 'lr',
+                stimulus: "Whenever the economy is strong, the incumbent party wins elections. The incumbent party won the election.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The economy was strong.",
+                    "The economy was not strong.",
+                    "No conclusion can be drawn about the economy."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While a strong economy might lead to election wins, there could be other reasons why the incumbent won."
+            },
+            {
+                type: 'lr',
+                stimulus: "All dogs are mammals. All mammals are animals.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "All dogs are animals.",
+                    "Some dogs are animals.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid syllogism. If all dogs are mammals and all mammals are animals, then by transitivity, all dogs must be animals."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the defendant is guilty, then the DNA evidence will match. The DNA evidence does not match.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The defendant is not guilty.",
+                    "The defendant is guilty.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid application of modus tollens. If guilt implies a DNA match, and there's no match, then the defendant cannot be guilty."
+            },
+            {
+                type: 'lr',
+                stimulus: "All roses are flowers. Some flowers fade quickly.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some roses fade quickly.",
+                    "No roses fade quickly.",
+                    "No conclusion can be drawn about roses fading quickly."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of the undistributed middle. The flowers that fade quickly might not include any roses, so we can't conclude anything about roses specifically."
+            },
+            {
+                type: 'lr',
+                stimulus: "Either the bill passes or the government shuts down. The bill did not pass.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The government will shut down.",
+                    "The government will not shut down.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid disjunctive syllogism. If only two options exist (A or B), and one is false (not A), then the other must be true (B)."
+            },
+            {
+                type: 'lr',
+                stimulus: "Whenever prices rise, demand falls. Demand has fallen.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Prices have risen.",
+                    "Prices have not risen.",
+                    "No conclusion can be drawn about prices."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While rising prices cause demand to fall, other factors could also cause demand to fall."
+            },
+            {
+                type: 'lr',
+                stimulus: "No reptiles are mammals. All snakes are reptiles.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "No snakes are mammals.",
+                    "Some snakes are not mammals.",
+                    "Both conclusions follow logically."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid syllogism. If no reptiles are mammals and all snakes are reptiles, then no snakes can be mammals."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the product is successful, then we will expand production. We are expanding production.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The product is successful.",
+                    "The product is not successful.",
+                    "No conclusion can be drawn about the product's success."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While success would lead to expansion, there might be other reasons for expanding production."
+            },
+            {
+                type: 'lr',
+                stimulus: "All philosophers question assumptions. Socrates questioned assumptions.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Socrates was a philosopher.",
+                    "Socrates was not a philosopher.",
+                    "No conclusion can be drawn about whether Socrates was a philosopher."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all philosophers question assumptions, others might also question assumptions without being philosophers."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the test is positive, then the disease is present. The disease is present.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The test is positive.",
+                    "The test is not positive.",
+                    "No conclusion can be drawn about the test."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While a positive test indicates disease, the disease could be present even if the test is negative (false negative)."
+            },
+            {
+                type: 'lr',
+                stimulus: "All cars produced by Company X have a defect. This vehicle has a defect.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "This vehicle was produced by Company X.",
+                    "This vehicle was not produced by Company X.",
+                    "No conclusion can be drawn about who produced this vehicle."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all Company X cars have defects, cars from other companies might also have defects."
+            },
+            {
+                type: 'lr',
+                stimulus: "Either the witness is lying or the defendant is guilty. The witness is not lying.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The defendant is guilty.",
+                    "The defendant is not guilty.",
+                    "No conclusion can be drawn."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid disjunctive syllogism. If only two options exist (A or B), and one is false (not A), then the other must be true (B)."
+            },
+            {
+                type: 'lr',
+                stimulus: "All birds have feathers. Penguins have feathers.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Penguins are birds.",
+                    "Penguins are not birds.",
+                    "No conclusion can be drawn about whether penguins are birds."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of affirming the consequent. While all birds have feathers, other animals might also have feathers."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the server is down, then the website is inaccessible. The website is accessible.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The server is not down.",
+                    "The server is down.",
+                    "No conclusion can be drawn about the server."
+                ],
+                correctIndex: 0,
+                explanation: "This is a valid application of modus tollens. If the server being down makes the website inaccessible, and the website is accessible, then the server cannot be down."
+            },
+            {
+                type: 'lr',
+                stimulus: "Some doctors are surgeons. Some surgeons are specialists.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some doctors are specialists.",
+                    "No doctors are specialists.",
+                    "No conclusion can be drawn about whether some doctors are specialists."
+                ],
+                correctIndex: 2,
+                explanation: "This is a classic syllogistic fallacy. The specialists might be among surgeons who are not doctors, or the doctor-surgeons might not include any specialists."
+            },
+            {
+                type: 'lr',
+                stimulus: "All politicians are public speakers. Some public speakers are persuasive.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "Some politicians are persuasive.",
+                    "No politicians are persuasive.",
+                    "No conclusion can be drawn about whether some politicians are persuasive."
+                ],
+                correctIndex: 2,
+                explanation: "This is the fallacy of the undistributed middle. The persuasive public speakers might not include any politicians."
+            },
+            {
+                type: 'lr',
+                stimulus: "If the temperature drops below freezing, the pipes will burst. The pipes burst.",
+                question: "What can be logically concluded from the statements above?",
+                answers: [
+                    "The temperature dropped below freezing.",
+                    "The temperature did not drop below freezing.",
+                    "No conclusion can be drawn about the temperature."
+                ],
+                correct极地");
+
+        // DOM elements
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const gameArea = document.getElementById('game-area');
+        const gameOver = document.getElementById('game-over');
+        const scoreElement = document.getElementById('score');
+        const comboElement = document.getElementById('combo');
+        const livesElement = document.getElementById('lives');
+        const stimulusElement = document.getElementById('stimulus');
+        const questionElement = document.getElementById('question');
+        const answersElement = document.getElementById('answers');
+        const explanationElement = document.getElementById('explanation');
+        const explanationTextElement = document.getElementById('explanation-text');
+        const timerBar = document.getElementById('timer-bar');
+        const questionNumberElement = document.getElementById('question-number');
+        const finalScoreElement = document.getElementById('final-score');
+        const lrModeButton = document.getElementById('lr-mode');
+        const rcModeButton = document.getElementById('rc-mode');
+        const mixedModeButton = document.getElementById('mixed-mode');
+
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        
+        lrModeButton.addEventListener('click', () => {
+            gameMode = 'lr';
+            lrModeButton.classList.add('active');
+            rcModeButton.classList.remove('active');
+            mixedModeButton.classList.remove('active');
+        });
+        
+        rcModeButton.addEventListener('click', () => {
+            gameMode = 'rc';
+            rcModeButton.classList.add('active');
+            lrModeButton.classList.remove('active');
+            mixedModeButton.classList.remove('active');
+        });
+        
+        mixedModeButton.addEventListener('click', () => {
+            gameMode = 'mixed';
+            mixedModeButton.classList.add('active');
+            lrModeButton.classList.remove('active');
+            rcModeButton.classList.remove('active');
+        });
+
+        // Game functions
+        function startGame() {
+            currentScore = 0;
+            comboMultiplier = 1;
+            lives = 3;
+            questionsAnswered = 0;
+            
+            scoreElement.textContent = currentScore;
+            comboElement.textContent = `x${comboMultiplier}`;
+            livesElement.textContent = lives;
+            
+            gameArea.style.display = 'block';
+            gameOver.style.display = 'none';
+            
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            clearInterval(timerId);
+            
+            // Filter questions based on game mode
+            let filteredQuestions;
+            if (gameMode === 'lr') {
+                filteredQuestions = questionBank.filter(q => q.type === 'lr');
+            } else if (gameMode === 'rc') {
+                filteredQuestions = questionBank.filter(q => q.type === 'rc');
+            } else {
+                filteredQuestions = questionBank;
+            }
+            
+            currentQuestionIndex = Math.floor(Math.random() * filteredQuestions.length);
+            const q = filteredQuestions[currentQuestionIndex];
+            
+            questionsAnswered++;
+            questionNumberElement.textContent = `Question #${questionsAnswered}`;
+            
+            stimulusElement.textContent = q.stimulus;
+            questionElement.textContent = q.question;
+            
+            answersElement.innerHTML = '';
+            q.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.textContent = answer;
+                button.classList.add('answer-btn');
+                button.onclick = () => checkAnswer(index, q.correctIndex);
+                answersElement.appendChild(button);
+            });
+            
+            explanationElement.style.display = 'none';
+            
+            // Reset timer bar with proper transition
+            timerBar.style.transition = 'none';
+            timerBar.style.width = '100%';
+            timerBar.style.backgroundColor = '#3498db';
+            
+            timeLeft = 15;
+            
+            // Start the timer bar animation
+            setTimeout(() => {
+                timerBar.style.transition = 'width 15s linear';
+                timerBar.style.width = '0%';
+            }, 50);
+            
+            // Start the countdown timer
+            timerId = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            
+            if (timeLeft <= 5) {
+                timerBar.style.backgroundColor = '#e74c3c';
+                if (timeLeft === 5) {
+                    timeWarningSound.play().catch(e => console.log("Could not play warning sound: ", e));
+                }
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerId);
+                wrongAnswer();
+            }
+        }
+
+        function checkAnswer(selectedIndex, correctIndex) {
+            clearInterval(timerId);
+            
+            const answerButtons = answersElement.querySelectorAll('.answer-btn');
+            
+            if (selectedIndex === correctIndex) {
+                // Correct answer
+                answerButtons[selectedIndex].classList.add('correct');
+                correctSound.play().catch(e => console.log("Could not play correct sound: ", e));
+                
+                // Calculate points: base + time bonus
+                const pointsEarned = 100 + (timeLeft * 10);
+                currentScore += pointsEarned * comboMultiplier;
+                comboMultiplier++;
+                
+                scoreElement.textContent = currentScore;
+                comboElement.textContent = `x${comboMultiplier}`;
+                
+                // Show combo animation if multiplier is high
+                if (comboMultiplier >= 3) {
+                    const comboAnimation = document.createElement('div');
+                    comboAnimation.classList.add('combo-animation');
+                    comboAnimation.textContent = `COMBO x${comboMultiplier-1}!`;
+                    gameArea.appendChild(comboAnimation);
+                    
+                    setTimeout(() => {
+                        gameArea.removeChild(comboAnimation);
+                    }, 1000);
+                }
+            } else {
+                // Incorrect answer
+                answerButtons[selectedIndex].classList.add('incorrect');
+                answerButtons[correctIndex].classList.add('correct');
+                incorrectSound.play().catch(e => console.log("Could not play incorrect sound: ", e));
+                
+                lives--;
+                livesElement.textContent = lives;
+                comboMultiplier = 1;
+                comboElement.textContent = `x${comboMultiplier}`;
+            }
+            
+            // Show explanation
+            explanationTextElement.textContent = questionBank.find(q => 
+                q.stimulus === stimulusElement.textContent && 
+                q.question === questionElement.textContent
+            ).explanation;
+            
+            explanationElement.style.display = 'block';
+            
+            // Wait before next question or game over (15 seconds now)
+            setTimeout(() => {
+                if (lives <= 0) {
+                    gameOverFunc();
+                } else {
+                    nextQuestion();
+                }
+            }, 15000); // 15 seconds to read explanation
+        }
+
+        function wrongAnswer() {
+            const correctIndex = questionBank.findIndex(q => 
+                q.stimulus === stimulusElement.textContent && 
+                q.question === questionElement.textContent
+            );
+            
+            const answerButtons = answersElement.querySelectorAll('.answer-btn');
+            answerButtons[questionBank[correctIndex].correctIndex].classList.add('correct');
+            incorrectSound.play().catch(e => console.log("Could not play incorrect sound: ", e));
+            
+            lives--;
+            livesElement.textContent = lives;
+            comboMultiplier = 1;
+            comboElement.textContent = `x${comboMultiplier}`;
+            
+            // Show explanation
+            explanationTextElement.textContent = questionBank[correctIndex].explanation;
+            explanationElement.style.display = 'block';
+            
+            // Wait before next question or game over (15 seconds now)
+            setTimeout(() => {
+                if (lives <= 0) {
+                    gameOverFunc();
+                } else {
+                    nextQuestion();
+                }
+            }, 15000); // 15 seconds to read explanation
+        }
+
+        function gameOverFunc() {
+            gameArea.style.display = 'none';
+            gameOver.style.display = 'block';
+            finalScoreElement.textContent = currentScore;
+        }
+    </script>
+</body>
+</html>
